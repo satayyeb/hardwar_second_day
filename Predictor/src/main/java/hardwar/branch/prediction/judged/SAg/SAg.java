@@ -25,7 +25,7 @@ public class SAg implements BranchPredictor {
 
         PSBHR = new RegisterBank(KSize , BHRSize);
 
-        PHT = new PageHistoryTable((int) Math.pow(2, BHRSize), SCSize);
+        PHT = new PageHistoryTable((int) Math.pow(2, KSize), SCSize);
 
         // Initialize the SC register
         SC = new SIPORegister("ali", SCSize, null);
