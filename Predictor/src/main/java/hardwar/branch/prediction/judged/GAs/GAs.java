@@ -29,19 +29,19 @@ public class GAs implements BranchPredictor {
      */
     public GAs(int BHRSize, int SCSize, int branchInstructionSize, int KSize, HashMode hashmode) {
         // TODO: complete the constructor
-        this.branchInstructionSize = 0;
-        this.KSize = 0;
-        this.hashMode = HashMode.XOR;
+        this.branchInstructionSize = branchInstructionSize;
+        this.KSize = KSize;
+        this.hashMode = hashmode;//HashMode.XOR;
 
         // Initialize the BHR register with the given size and no default value
-        BHR = null;
+        BHR = new SIPORegister("pag", BHRSize, null);
 
         // Initializing the PAPHT with K bit as PHT selector and 2^BHRSize row as each PHT entries
         // number and SCSize as block size
-        PSPHT = null;
+        PSPHT = new PerAddressPredictionHistoryTable(KSize, (int) Math.pow(2, BHRSize), SCSize);
 
         // Initialize the saturating counter
-        SC = null;
+        SC = new SIPORegister("ali", SCSize, null);
     }
 
     /**
@@ -54,7 +54,8 @@ public class GAs implements BranchPredictor {
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
         // TODO: complete Task 1
-        return BranchResult.NOT_TAKEN;
+        SC.load(PSPHT.setDefault(getCacheEntry(branchInstruction.getInstructionAddress()), getDefaultBlock()));
+        return BranchResult.of(SC.read()[0].getValue());
     }
 
     /**
@@ -66,6 +67,9 @@ public class GAs implements BranchPredictor {
     @Override
     public void update(BranchInstruction branchInstruction, BranchResult actual) {
         // TODO: complete Task 2
+        SC.load(CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING));
+        PSPHT.put(getCacheEntry(branchInstruction.getInstructionAddress()), SC.read());
+        BHR.insert(Bit.of(BranchResult.isTaken(actual)));
     }
 
     /**
