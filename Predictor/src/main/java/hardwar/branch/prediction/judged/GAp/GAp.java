@@ -28,14 +28,14 @@ public class GAp implements BranchPredictor {
         this.branchInstructionSize = 0;
 
         // Initialize the BHR register with the given size and no default value
-        this.BHR = null;
+        this.BHR = new SIPORegister("pag", BHRSize, null);
 
         // Initializing the PAPHT with BranchInstructionSize as PHT Selector and 2^BHRSize row as each PHT entries
         // number and SCSize as block size
-        PAPHT = null;
+        PAPHT = new PerAddressPredictionHistoryTable(branchInstructionSize, (int) Math.pow(2, BHRSize), SCSize);
 
         // Initialize the SC register
-        SC = null;
+        SC = new SIPORegister("ali", SCSize, null);
     }
 
     /**
@@ -47,7 +47,8 @@ public class GAp implements BranchPredictor {
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
         // TODO: complete Task 1
-        return BranchResult.NOT_TAKEN;
+        SC.load(PAPHT.setDefault(getCacheEntry(branchInstruction.getInstructionAddress()), getDefaultBlock()));
+        return BranchResult.of(SC.read()[0].getValue());
     }
 
     /**
@@ -59,6 +60,9 @@ public class GAp implements BranchPredictor {
     @Override
     public void update(BranchInstruction branchInstruction, BranchResult actual) {
         // TODO : complete Task 2
+        SC.load(CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING));
+        PAPHT.put(getCacheEntry(branchInstruction.getInstructionAddress()), SC.read());
+        BHR.insert(Bit.of(BranchResult.isTaken(actual)));
     }
 
 
