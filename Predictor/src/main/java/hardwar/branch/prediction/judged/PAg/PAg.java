@@ -26,7 +26,7 @@ public class PAg implements BranchPredictor {
     public PAg(int BHRSize, int SCSize, int branchInstructionSize) {
         // TODO: complete the constructor
         // Initialize the PABHR with the given bhr and branch instruction size
-        PABHR = new RegisterBank(branchInstructionSize , SCSize);
+        PABHR = new RegisterBank(branchInstructionSize , BHRSize);
 
         PHT = new PageHistoryTable((int) Math.pow(2, BHRSize), SCSize);
 
