@@ -38,7 +38,7 @@ public class SAp implements BranchPredictor {
     public BranchResult predict(BranchInstruction branchInstruction) {
         // TODO: complete Task 1
         ShiftRegister BHR = PSBHR.read(getRBAddressLine(branchInstruction.getInstructionAddress()));
-        SC.load(PAPHT.setDefault(getCacheEntry(getRBAddressLine(branchInstruction.getInstructionAddress()) , BHR.read()), getDefaultBlock()));
+        SC.load(PAPHT.setDefault(getRBAddressLine(getCacheEntry(branchInstruction.getInstructionAddress() , BHR.read())), getDefaultBlock()));
         return BranchResult.of(SC.read()[0].getValue());
     }
 
@@ -47,7 +47,7 @@ public class SAp implements BranchPredictor {
         // TODO:complete Task 2
         ShiftRegister BHR = PSBHR.read(getRBAddressLine(branchInstruction.getInstructionAddress()));
         SC.load(CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING));
-        PAPHT.put(getCacheEntry(getRBAddressLine(branchInstruction.getInstructionAddress()),BHR.read()), SC.read());
+        PAPHT.put(getRBAddressLine(getCacheEntry(branchInstruction.getInstructionAddress(),BHR.read())), SC.read());
         BHR.insert(Bit.of(BranchResult.isTaken(actual)));
         PSBHR.write(getRBAddressLine(branchInstruction.getInstructionAddress()) , BHR.read());
     }
