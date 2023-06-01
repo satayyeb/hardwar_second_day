@@ -19,7 +19,7 @@ public class SAg implements BranchPredictor {
 
     public SAg(int BHRSize, int SCSize, int branchInstructionSize, int KSize) {
         // TODO: complete the constructor
-        this.branchInstructionSize = 0;
+        this.branchInstructionSize = branchInstructionSize;
         this.KSize = KSize;
 
 
