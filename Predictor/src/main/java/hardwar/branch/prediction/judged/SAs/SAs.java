@@ -37,8 +37,9 @@ public class SAs implements BranchPredictor {
         // TODO: complete Task 1
 
         ShiftRegister BHR = PSBHR.read(getAddressLine(branchInstruction.getInstructionAddress()));
-        SC.load(PSPHT.setDefault(getCacheEntry(branchInstruction.getInstructionAddress() , BHR.read()), getDefaultBlock()));
-        return BranchResult.of(SC.read()[0].getValue());    }
+        SC.load(PSPHT.setDefault(getCacheEntry(getAddressLine(branchInstruction.getInstructionAddress()) , BHR.read()), getDefaultBlock()));
+        return BranchResult.of(SC.read()[0].getValue());
+    }
 
     @Override
     public void update(BranchInstruction branchInstruction, BranchResult actual) {
