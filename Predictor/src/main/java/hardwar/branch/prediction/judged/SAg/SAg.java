@@ -20,12 +20,12 @@ public class SAg implements BranchPredictor {
     public SAg(int BHRSize, int SCSize, int branchInstructionSize, int KSize) {
         // TODO: complete the constructor
         this.branchInstructionSize = 0;
-        this.KSize = 0;
+        this.KSize = KSize;
 
 
         PSBHR = new RegisterBank(KSize , BHRSize);
 
-        PHT = new PageHistoryTable((int) Math.pow(2, KSize), SCSize);
+        PHT = new PageHistoryTable((int) Math.pow(2, BHRSize), SCSize);
 
         // Initialize the SC register
         SC = new SIPORegister("ali", SCSize, null);
