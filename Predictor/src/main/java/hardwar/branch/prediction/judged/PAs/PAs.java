@@ -21,19 +21,19 @@ public class PAs implements BranchPredictor {
 
     public PAs(int BHRSize, int SCSize, int branchInstructionSize, int KSize, HashMode hashMode) {
         // TODO: complete the constructor
-        this.branchInstructionSize = 0;
-        this.KSize = 0;
-        this.hashMode = HashMode.XOR;
+        this.branchInstructionSize = branchInstructionSize;
+        this.KSize = KSize;
+        this.hashMode = hashMode;
 
         // Initialize the PABHR with the given bhr and branch instruction size
-        PABHR = null;
+        PABHR = new RegisterBank(branchInstructionSize , BHRSize);
 
         // Initializing the PAPHT with K bit as PHT selector and 2^BHRSize row as each PHT entries
         // number and SCSize as block size
-        PSPHT = null;
+        PSPHT = new PerAddressPredictionHistoryTable(KSize, (int) Math.pow(2, BHRSize), SCSize);
 
         // Initialize the saturating counter
-        SC = null;
+        SC = new SIPORegister("ali", SCSize, null);
     }
 
     /**
@@ -46,12 +46,19 @@ public class PAs implements BranchPredictor {
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
         // TODO: complete Task 1
-        return BranchResult.NOT_TAKEN;
+        ShiftRegister BHR = PABHR.read(branchInstruction.getInstructionAddress());
+        SC.load(PSPHT.setDefault(getCacheEntry(branchInstruction.getInstructionAddress(), BHR.read()), getDefaultBlock()));
+        return BranchResult.of(SC.read()[0].getValue());
     }
 
     @Override
     public void update(BranchInstruction instruction, BranchResult actual) {
         // TODO:complete Task 2
+        ShiftRegister BHR = PABHR.read(instruction.getInstructionAddress());
+        SC.load(CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING));
+        PSPHT.put(getCacheEntry(instruction.getInstructionAddress(), BHR.read()), SC.read());
+        BHR.insert(Bit.of(BranchResult.isTaken(actual)));
+        PABHR.write(instruction.getInstructionAddress() , BHR.read());
     }
 
     @Override
