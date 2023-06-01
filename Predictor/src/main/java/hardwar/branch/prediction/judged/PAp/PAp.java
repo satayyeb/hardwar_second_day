@@ -24,26 +24,31 @@ public class PAp implements BranchPredictor {
         // TODO: complete the constructor
         this.branchInstructionSize = branchInstructionSize;
 
-        // Initialize the PABHR with the given bhr and branch instruction size
-        PABHR = null;
-
         // Initializing the PAPHT with BranchInstructionSize as PHT Selector and 2^BHRSize row as each PHT entries
         // number and SCSize as block size
-        PAPHT = null;
+        PAPHT = new PerAddressPredictionHistoryTable(branchInstructionSize,(int)Math.pow(2,BHRSize),SCSize);
+
+        PABHR = new RegisterBank(branchInstructionSize , BHRSize);
 
         // Initialize the SC register
-        SC = null;
+        SC = new SIPORegister("ali", SCSize, null);
     }
 
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
         // TODO: complete Task 1
-        return BranchResult.NOT_TAKEN;
+        ShiftRegister BHR = PABHR.read(branchInstruction.getInstructionAddress());
+        SC.load(PAPHT.setDefault(getCacheEntry(branchInstruction.getInstructionAddress(),BHR.read()), this.getDefaultBlock()));
+        return BranchResult.of(SC.read()[0].getValue());
     }
 
     @Override
     public void update(BranchInstruction instruction, BranchResult actual) {
-        // TODO:complete Task 2
+        ShiftRegister BHR = PABHR.read(instruction.getInstructionAddress());
+        SC.load(CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING));
+        PAPHT.put(getCacheEntry(instruction.getInstructionAddress(),BHR.read()), SC.read());
+        BHR.insert(Bit.of(BranchResult.isTaken(actual)));
+        PABHR.write(instruction.getInstructionAddress() , BHR.read());
     }
 
 
