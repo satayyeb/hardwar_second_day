@@ -61,7 +61,7 @@ public class SAp implements BranchPredictor {
     private Bit[] getCacheEntry(Bit[] branchAddress, Bit[] BHRValue) {
         // Concatenate the branch address bits with the BHR bits
         Bit[] cacheEntry = new Bit[branchAddress.length + BHRValue.length];
-        System.arraycopy(branchAddress, 0, cacheEntry, 0, KSize);
+        System.arraycopy(branchAddress, 0, cacheEntry, 0, branchAddress.length);
         System.arraycopy(BHRValue, 0, cacheEntry, branchAddress.length, BHRValue.length);
         return cacheEntry;
     }
