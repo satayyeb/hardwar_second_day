@@ -37,15 +37,15 @@ public class SAs implements BranchPredictor {
         // TODO: complete Task 1
 
         ShiftRegister BHR = PSBHR.read(getAddressLine(branchInstruction.getInstructionAddress()));
-        SC.load(PSPHT.setDefault(getCacheEntry(branchInstruction.getInstructionAddress() , BHR.read()), getDefaultBlock()));
-        return BranchResult.of(SC.read()[0].getValue());    }
+        SC.load(PSPHT.setDefault(getCacheEntry(getAddressLine(branchInstruction.getInstructionAddress()) , BHR.read()), getDefaultBlock()));
+        return BranchResult.of(SC.read()[0].getValue());
+    }
 
     @Override
     public void update(BranchInstruction branchInstruction, BranchResult actual) {
         ShiftRegister BHR = PSBHR.read(getAddressLine(branchInstruction.getInstructionAddress()));
         SC.load(CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING));
-        PSPHT.put(getCacheEntry(branchInstruction.getInstructionAddress(),BHR.read()), SC.read());
-
+        PSPHT.put(getCacheEntry(getAddressLine(branchInstruction.getInstructionAddress()),BHR.read()), SC.read());
         BHR.insert(Bit.of(BranchResult.isTaken(actual)));
         PSBHR.write(getAddressLine(branchInstruction.getInstructionAddress()) , BHR.read());
     }
