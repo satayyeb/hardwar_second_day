@@ -20,27 +20,32 @@ public class SAg implements BranchPredictor {
     public SAg(int BHRSize, int SCSize, int branchInstructionSize, int KSize) {
         // TODO: complete the constructor
         this.branchInstructionSize = 0;
-        this.KSize = 0;
+        this.KSize = KSize;
 
-        // Initialize the PABHR with the given bhr and Ksize
-        PSBHR = null;
 
-        // Initialize the PHT with a size of 2^size and each entry having a saturating counter of size "SCSize"
-        PHT = null;
+        PSBHR = new RegisterBank(KSize , BHRSize);
+
+        PHT = new PageHistoryTable((int) Math.pow(2, BHRSize), SCSize);
 
         // Initialize the SC register
-        SC = null;
+        SC = new SIPORegister("ali", SCSize, null);
     }
 
     @Override
     public BranchResult predict(BranchInstruction instruction) {
-        // TODO: complete Task 1
-        return BranchResult.NOT_TAKEN;
+        // TODO : complete Task 1
+        ShiftRegister BHR = PSBHR.read(getRBAddressLine(instruction.getInstructionAddress()));
+        SC.load(PHT.setDefault(BHR.read(), this.getDefaultBlock()));
+        return BranchResult.of(SC.read()[0].getValue());
     }
 
     @Override
     public void update(BranchInstruction branchInstruction, BranchResult actual) {
-        // TODO: complete Task 2
+        ShiftRegister BHR = PSBHR.read(getRBAddressLine(branchInstruction.getInstructionAddress()));
+        SC.load(CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING));
+        PHT.put(BHR.read(), SC.read());
+        BHR.insert(Bit.of(BranchResult.isTaken(actual)));
+        PSBHR.write(getRBAddressLine(branchInstruction.getInstructionAddress()) , BHR.read());
     }
 
     private Bit[] getRBAddressLine(Bit[] branchAddress) {
