@@ -45,8 +45,7 @@ public class SAs implements BranchPredictor {
     public void update(BranchInstruction branchInstruction, BranchResult actual) {
         ShiftRegister BHR = PSBHR.read(getAddressLine(branchInstruction.getInstructionAddress()));
         SC.load(CombinationalLogic.count(SC.read(), BranchResult.isTaken(actual), CountMode.SATURATING));
-        PSPHT.put(getCacheEntry(branchInstruction.getInstructionAddress(),BHR.read()), SC.read());
-
+        PSPHT.put(getCacheEntry(getAddressLine(branchInstruction.getInstructionAddress()),BHR.read()), SC.read());
         BHR.insert(Bit.of(BranchResult.isTaken(actual)));
         PSBHR.write(getAddressLine(branchInstruction.getInstructionAddress()) , BHR.read());
     }
